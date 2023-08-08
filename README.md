@@ -5,8 +5,8 @@ The goal is to allow a person or group of people to play a game where
 a game/dungeon master role is simulated via LLM. The hope is to make this
 project very modular such that it can be played from the console or over
 some more robust chat interface (such as Discord), and connect to different
-LLMs (such os OpenAI's Chat-GPT.) The setting and initial prompts will be
-set by the user/admin. Everything from there should be a fairly unique
+LLMs (such as OpenAI's Chat-GPT or Llama-2.) The setting and initial prompts
+will be set by the user/admin. Everything from there should be a fairly unique
 experience.
 
 ## plans

@@ -3,12 +3,18 @@
 import openai
 import yaml
 
-default_prompt = """You are a dungeon master and responding to the player's stated actions."""
+from storyteller import Storyteller, LLM
 
-messages = [
-    {"role": "system", "content": default_prompt},
-    {"role": "user", "content": "What's behind the magic door?"}]
+default_setting = """
+Our adventure begins in a lonely tavern.
+The barkeep leans in and says,
+"I mean no offense, but you look like you could use some work.
+I have a job for you if you're interested."
 
+How do you respond?
+"""
+
+system_prompt = "You are a dungeon master and responding to the player's stated actions."
 
 def init():
     # Load config
@@ -17,14 +23,20 @@ def init():
     openai.api_key = config["openai_key"]
 
 def run():
-    response = openai.ChatCompletion.create(
-        model='gpt-3.5-turbo',
-        messages=messages,
-        temperature=0.5,
-        stop=None,
-        max_tokens=350)
+    """ Run the main loop."""
     
-    print(response.choices[0].message.content)
+    st = Storyteller(LLM.DUMMY)
+    
+    print(default_setting)
+        
+    while True:
+        print()
+        user_input = input(">> ")
+        if user_input == 'exit' or user_input == 'quit':
+            break
+        response = st.respond(user_input)
+
+        print(response)
 
 if __name__ == "__main__":
     init()
