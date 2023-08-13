@@ -12,9 +12,8 @@ experience.
 ## plans
 
 * create a basic cli framework that can talk to OpenAI
-* create a message history to grow the story
-* tokens are limited (and potentially costly), occasionally summarize the
-story so far to condense the history into more manageable sizes
+* take advantage of langchain... apparently it covers 95% of everything
+  thought I'd have to implement
 
 ## further ideas
 

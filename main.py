@@ -1,9 +1,13 @@
 # main entry point to have a dialogue with the user and ChatGPT
 
-import openai
+from langchain.llms import LlamaCpp
+from langchain import PromptTemplate, LLMChain
+from langchain.callbacks.manager import CallbackManager
+from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
+
 import yaml
 
-from storyteller import Storyteller, LLM
+#from storyteller import Storyteller, LLM
 
 default_setting = """
 Our adventure begins in a lonely tavern.
@@ -16,28 +20,17 @@ How do you respond?
 
 system_prompt = "You are a dungeon master and responding to the player's stated actions."
 
-def init():
-    # Load config
-    with open("config.yml", "r") as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
-    openai.api_key = config["openai_key"]
+# Callbacks support token-wise streaming
+callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+# Verbose is required to pass to the callback manager
 
-def run():
-    """ Run the main loop."""
-    
-    st = Storyteller(LLM.DUMMY)
-    
-    print(default_setting)
-        
-    while True:
-        print()
-        user_input = input(">> ")
-        if user_input == 'exit' or user_input == 'quit':
-            break
-        response = st.respond(user_input)
-
-        print(response)
+# Make sure the model path is correct for your system!
+llm = LlamaCpp(
+    model_path="/home/dave/Downloads/llama-2-7b-chat.ggmlv3.q4_K_M.bin",
+    #input={"temperature": 0.75, "max_length": 2000, "top_p": 1},
+    callback_manager=callback_manager,
+    verbose=True,
+)
 
 if __name__ == "__main__":
-    init()
-    run()
+    response = llm(default_setting)
