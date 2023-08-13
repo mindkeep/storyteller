@@ -1,15 +1,16 @@
-# main entry point to have a dialogue with the user and ChatGPT
+"""main entry point to have a dialogue with the user and an LLM"""
 
 from langchain.llms import LlamaCpp
-from langchain import PromptTemplate, LLMChain
+
+# from langchain import PromptTemplate, LLMChain
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-import yaml
+from storyteller.core import config
 
-#from storyteller import Storyteller, LLM
+# from storyteller import Storyteller, LLM
 
-default_setting = """
+DEFAULT_SETTING = """
 Our adventure begins in a lonely tavern.
 The barkeep leans in and says,
 "I mean no offense, but you look like you could use some work.
@@ -18,19 +19,43 @@ I have a job for you if you're interested."
 How do you respond?
 """
 
-system_prompt = "You are a dungeon master and responding to the player's stated actions."
-
-# Callbacks support token-wise streaming
-callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
-# Verbose is required to pass to the callback manager
-
-# Make sure the model path is correct for your system!
-llm = LlamaCpp(
-    model_path="/home/dave/Downloads/llama-2-7b-chat.ggmlv3.q4_K_M.bin",
-    #input={"temperature": 0.75, "max_length": 2000, "top_p": 1},
-    callback_manager=callback_manager,
-    verbose=True,
+SYSTEM_PROMPT = (
+    "You are a dungeon master and responding to the player's stated actions."
 )
 
+class StoryTeller:
+    """
+    Storyteller class
+    """
+    def __init__(self, conf: config.Config) -> None:
+        """
+        Initialize the storyteller application
+        """
+        self._conf = conf
+        self._callback_manager = CallbackManager([StreamingStdOutCallbackHandler()])
+        self._llm = LlamaCpp(
+            model_path=conf.llamacpp_model_path,
+            callback_manager=self._callback_manager,
+            verbose=True,
+        )  # type: ignore
+
+    def run(self) -> None:
+        """
+        Run the storyteller application
+        """
+        print("Welcome to Storyteller!")
+        print("Type 'exit' to exit the application.")
+        print()
+
+        while True:
+            user_input = input("You: ")
+            if user_input in ["exit", "quit"]:
+                break
+            else:
+                response = self._llm(user_input)
+                print(f"Storyteller: \n{response}")
+
+
 if __name__ == "__main__":
-    response = llm(default_setting)
+    st = StoryTeller(config.load_config(path="config.yml"))
+    st.run()
