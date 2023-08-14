@@ -11,20 +11,21 @@ experience.
 
 ## plans
 
-* create a basic cli framework that can talk to OpenAI
-* take advantage of langchain... apparently it covers 95% of everything
-  thought I'd have to implement
-
-## further ideas
-
-* provide game modes with customizable story relevant things to remember
-  * skills
-  * items
-  * player descriptions
-  * location
+* interfaces
+  * streamlit or streamsync
+  * maybe a better managed cli
+  * discord
+* LLMS
+  * add OpenAI back as an LLM
+* multi-game support and saving
+* multiplayer support and joining games (easiest as a discord bot probably)
+* Langchain and different game modes
+  * Free form chat mode (basically what we have now))
+  * Item tracking
+  * Skills checking and challenges
+    * via LangChain tools
+  * More prompt templates,
 * output complexity stats around tokens and response times
 * add a set of commands for Out Of Character operations
   * undo commands
-* provide a way to issue pass/fail challenges
-  * this could be skill based or percentage based, but likely better to
-    solve this outside of the LLM response
+  * history edits and tweaks?
