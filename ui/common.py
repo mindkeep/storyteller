@@ -2,7 +2,7 @@
 This module contains the base interface class
 """
 
-class Interface:
+class UIBaseInterface:
     """
     Interface class
     """

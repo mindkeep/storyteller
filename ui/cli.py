@@ -5,9 +5,9 @@ This module provides the CLI interface
 from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 
-from ui.common import Interface
+from ui.common import UIBaseInterface
 
-class CLIInterface(Interface):
+class CLIInterface(UIBaseInterface):
     """
     CLI interface class
     """
@@ -29,7 +29,7 @@ class CLIInterface(Interface):
         """
         Get input from the interface
         """
-        return input("You: ")
+        return input("\n\nYou: ")
 
     def get_callback_manager(self) -> CallbackManager:
         """

@@ -10,14 +10,9 @@ from core import config
 from ui.cli import CLIInterface
 
 
-DEFAULT_SETTING = """
-Our adventure begins in a lonely tavern.
-The barkeep leans in and says,
-"I mean no offense, but you look like you could use some work.
-I have a job for you if you're interested."
-
-How do you respond?
-"""
+DEFAULT_SETTING = """Our adventure begins in a lonely tavern. The barkeep
+leans in and says, "I mean no offense, but you look like you could use some
+work. I have a job for you if you're interested." """
 
 PROMPT_TEMPLATE = """You are a dungeon master and responding
 to the player's stated actions.
@@ -52,11 +47,11 @@ class StoryTeller:
             template=PROMPT_TEMPLATE)
 
         # initialize the callback manager
-        if self._conf.interface == config.Interface.CLI:
-            self._interface = CLIInterface()
+        if self._conf.ui == config.UI.CLI:
+            self._ui = CLIInterface()
         else:
             raise NotImplementedError(
-                f"Interface {self._conf.interface} not implemented."
+                f"Interface {self._conf.ui} not implemented."
             )
 
         # initialize the LLM
@@ -80,8 +75,11 @@ class StoryTeller:
         if llm == config.LLMProvider.LLAMACPP:
             self._llm = LlamaCpp(
                 model_path=self._conf.llamacpp_model_path,
-                callback_manager=self._interface.get_callback_manager(),
-                verbose=True,
+                callback_manager=self._ui.get_callback_manager(),
+                verbose=False,
+                n_ctx=2048,
+                temperature=0.8,
+
             )  # type: ignore
         else:
             raise NotImplementedError(
@@ -92,14 +90,19 @@ class StoryTeller:
         """
         Run the storyteller application
         """
-        self._interface.output("Welcome to Storyteller!")
-        self._interface.output("Type 'exit' to exit the application.\n")
-        self._interface.output(DEFAULT_SETTING)
+        self._ui.output("Welcome to Storyteller!")
+        self._ui.output("Type 'exit' to exit the application.\n")
+        self._ui.output(DEFAULT_SETTING)
 
         while True:
-            user_input = self._interface.get_input()
+            user_input = self._ui.get_input()
             if user_input in ["exit", "quit"]:
                 break
             else:
-                response = self._conversation_chain.run(user_input)
-                self._interface.output(f"Storyteller: \n{response}")
+                try:
+                    #response = self._conversation_chain.run(user_input)
+                    self._conversation_chain.run(user_input)
+                except Exception as err:
+                    self._ui.output(f"Error: {err}")
+                    continue
+                #self._ui.output(f"Storyteller: \n{response}")

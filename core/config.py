@@ -12,11 +12,11 @@ class LLMProvider(str, Enum):
     Enum class for LLM provider
     """
 
-    OPENAI = "openai"
     LLAMACPP = "llamacpp"
+    OPENAI = "openai"
 
 
-class Interface(str, Enum):
+class UI(str, Enum):
     """
     Enum class for Interface
     """
@@ -34,7 +34,7 @@ class Config(BaseModel):
     openai_key: str
     openai_model: str
     llamacpp_model_path: str
-    interface: Interface
+    ui: UI
 
 
 def load_config(path: str = "config.yml") -> Config:
