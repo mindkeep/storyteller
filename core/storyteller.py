@@ -17,13 +17,17 @@ work. I have a job for you if you're interested." """
 PROMPT_TEMPLATE = """You are a dungeon master and responding
 to the player's stated actions.
 
+Example interaction:
+AI: You enter the tavern and sees a barkeep and a few adventures whispering
+to each other over drinks at a round table.
+Human: I walk over to the table ask if I can join them.
+AI: They look you up and down and decide to ignore you and continue their
+conversation. Behind you, you hear the barkeep laugh.
+
 Conversation history:
 {memory}
-
-Player response:
-{response}
-
-Your response:"""
+Human: {response}
+AI: """
 
 class StoryTeller:
     """
@@ -61,7 +65,9 @@ class StoryTeller:
         self._conversation_chain = LLMChain(
             llm=self._llm,
             prompt=self._prompt_template,
-            memory=self._memory)
+            memory=self._memory,
+            verbose=True,
+            )
 
     def set_llm(self, llm: config.LLMProvider, model: str = "") -> None:
         """
@@ -79,7 +85,7 @@ class StoryTeller:
                 verbose=False,
                 n_ctx=2048,
                 temperature=0.8,
-
+                stop=["\n\n", "You:", "you:", "Player:", "player:", "Human:", "human:"],
             )  # type: ignore
         else:
             raise NotImplementedError(
@@ -106,3 +112,7 @@ class StoryTeller:
                     self._ui.output(f"Error: {err}")
                     continue
                 #self._ui.output(f"Storyteller: \n{response}")
+
+if __name__ == "__main__":
+    st = StoryTeller(config.load_config(path="config.yml"))
+    st.run()
