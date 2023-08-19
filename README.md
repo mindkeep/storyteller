@@ -11,16 +11,17 @@ experience.
 
 ## plans
 
+* multi-game support and saving
 * interfaces
-  * streamlit or streamsync
   * maybe a better managed cli
   * discord
+  * streamlit or streamsync
 * LLMS
   * add OpenAI back as an LLM
-* multi-game support and saving
+  * make LLamaCpp a singleton instance (or microservice)
 * multiplayer support and joining games (easiest as a discord bot probably)
 * Langchain and different game modes
-  * Free form chat mode (basically what we have now))
+  * Free form chat mode (basically what we have now)
   * Item tracking
   * Skills checking and challenges
     * via LangChain tools
