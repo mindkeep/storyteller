@@ -2,30 +2,40 @@
 This module contains the base interface class
 """
 
-class UIBaseInterface:
+from abc import ABC, abstractmethod
+from core.config import Config
+
+class BaseUI(ABC):
     """
     Interface class
     """
 
-    def __init__(self) -> None:
+    def __init__(self, conf: Config) -> None:
         """
         Initialize the interface
         """
+        self._conf = conf
 
+    @abstractmethod
+    def run(self) -> None:
+        """
+        Run the interface
+        """
+
+    @abstractmethod
     def output(self, text: str) -> None:
         """
         Output text to the interface
         """
-        raise NotImplementedError("Interface is a base class and cannot be instantiated.")
 
+    @abstractmethod
     def get_input(self) -> str:
         """
         Get input from the interface
         """
-        raise NotImplementedError("Interface is a base class and cannot be instantiated.")
 
+    @abstractmethod
     def get_callback_manager(self) -> None:
         """
         Get the callback manager
         """
-        raise NotImplementedError("Interface is a base class and cannot be instantiated.")

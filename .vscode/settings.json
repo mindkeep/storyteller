@@ -1,7 +1,13 @@
 {
     "python.analysis.typeCheckingMode": "basic",
     "cSpell.words": [
-        "nuthin"
+        "baseui",
+        "Langchain",
+        "llamacpp",
+        "LLMS",
+        "nuthin",
+        "streamlit",
+        "streamsync"
     ],
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"

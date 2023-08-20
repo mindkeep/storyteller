@@ -7,7 +7,7 @@ from langchain.prompts import PromptTemplate
 from langchain.schema.messages import ChatMessage
 
 from core import config
-from ui.cli import CLIInterface
+from ui.baseui import BaseUI
 
 
 DEFAULT_SETTING = """Our adventure begins in a lonely tavern. The barkeep
@@ -33,10 +33,13 @@ class StoryTeller:
     """
     Storyteller class
     """
-    def __init__(self, conf: config.Config) -> None:
+    def __init__(self, conf: config.Config, interface: BaseUI) -> None:
         """
         Initialize the storyteller application
         """
+
+        # set the ui for callbacks
+        self._ui = interface
 
         # store the configuration
         self._conf = conf
@@ -49,14 +52,6 @@ class StoryTeller:
         self._prompt_template = PromptTemplate(
             input_variables=["memory", "response"],
             template=PROMPT_TEMPLATE)
-
-        # initialize the callback manager
-        if self._conf.ui == config.UI.CLI:
-            self._ui = CLIInterface()
-        else:
-            raise NotImplementedError(
-                f"Interface {self._conf.ui} not implemented."
-            )
 
         # initialize the LLM
         self.set_llm(self._conf.llm_provider)
@@ -108,11 +103,7 @@ class StoryTeller:
                 try:
                     #response = self._conversation_chain.run(user_input)
                     self._conversation_chain.run(user_input)
-                except Exception as err:
+                except Exception as err:  # pylint: disable=broad-except
                     self._ui.output(f"Error: {err}")
                     continue
                 #self._ui.output(f"Storyteller: \n{response}")
-
-if __name__ == "__main__":
-    st = StoryTeller(config.load_config(path="config.yml"))
-    st.run()
