@@ -6,6 +6,7 @@
         "llamacpp",
         "LLMS",
         "nuthin",
+        "pydantic",
         "streamlit",
         "streamsync"
     ],

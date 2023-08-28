@@ -1,12 +1,9 @@
 """main module for the storyteller application"""
 
-from langchain.llms import LlamaCpp
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import LLMChain
-from langchain.prompts import PromptTemplate
-from langchain.schema.messages import ChatMessage
 
-from core import config
+from pydantic import BaseModel  # pylint: disable=no-name-in-module
 from ui.baseui import BaseUI
 
 
@@ -29,81 +26,28 @@ Conversation history:
 Human: {response}
 AI: """
 
-class StoryTeller:
+class StoryTeller(BaseModel):
     """
     Storyteller class
     """
-    def __init__(self, conf: config.Config, interface: BaseUI) -> None:
-        """
-        Initialize the storyteller application
-        """
 
-        # set the ui for callbacks
-        self._ui = interface
-
-        # store the configuration
-        self._conf = conf
-
-        # initialize the chat memory
-        self._memory = ConversationBufferMemory(memory_key="memory")
-        self._memory.chat_memory.add_message(ChatMessage(role="Setting", content=DEFAULT_SETTING))
-
-        # create our prompt template
-        self._prompt_template = PromptTemplate(
-            input_variables=["memory", "response"],
-            template=PROMPT_TEMPLATE)
-
-        # initialize the LLM
-        self.set_llm(self._conf.llm_provider)
-
-        # initialize the conversation chain
-        self._conversation_chain = LLMChain(
-            llm=self._llm,
-            prompt=self._prompt_template,
-            memory=self._memory,
-            verbose=True,
-            )
-
-    def set_llm(self, llm: config.LLMProvider, model: str = "") -> None:
-        """
-        Set the LLM
-
-        Args:
-            llm (config.LLMProvider): the LLM provider
-            model (str, optional): the model path. Defaults to "".
-        """
-         # initialize the LLM
-        if llm == config.LLMProvider.LLAMACPP:
-            self._llm = LlamaCpp(
-                model_path=self._conf.llamacpp_model_path,
-                callback_manager=self._ui.get_callback_manager(),
-                verbose=False,
-                n_ctx=2048,
-                temperature=0.8,
-                stop=["\n\n", "You:", "you:", "Player:", "player:", "Human:", "human:"],
-            )  # type: ignore
-        else:
-            raise NotImplementedError(
-                f"LLM provider {llm} / model {model} not implemented."
-            )
+    ui: BaseUI
+    llm_chain: LLMChain
+    memory: ConversationBufferMemory
 
     def run(self) -> None:
         """
         Run the storyteller application
         """
-        self._ui.output("Welcome to Storyteller!")
-        self._ui.output("Type 'exit' to exit the application.\n")
-        self._ui.output(DEFAULT_SETTING)
+        self.ui.output("Type 'exit' to exit the application.\n")
 
         while True:
-            user_input = self._ui.get_input()
+            user_input = self.ui.get_input()
             if user_input in ["exit", "quit"]:
                 break
             else:
                 try:
-                    #response = self._conversation_chain.run(user_input)
-                    self._conversation_chain.run(user_input)
+                    self.llm_chain.run(user_input)
                 except Exception as err:  # pylint: disable=broad-except
-                    self._ui.output(f"Error: {err}")
+                    self.ui.output(f"Error: {err}")
                     continue
-                #self._ui.output(f"Storyteller: \n{response}")
