@@ -5,6 +5,8 @@
         "Langchain",
         "llamacpp",
         "LLMS",
+        "logprobs",
+        "mlock",
         "nuthin",
         "pydantic",
         "streamlit",

@@ -1,4 +1,4 @@
 langchain
 llama-cpp-python
-pydantic
+pydantic < 2.0
 PyYAML

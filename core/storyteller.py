@@ -3,6 +3,7 @@
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import LLMChain
 
+# using pydantic v1 until langchain updates to v2
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
 from ui.baseui import BaseUI
 
