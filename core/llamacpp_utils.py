@@ -1,7 +1,7 @@
 """main module for the storyteller application"""
 
 from langchain.llms.base import LLM
-from langchain.llms import LlamaCpp
+from langchain.llms.llamacpp import LlamaCpp
 from langchain.memory.chat_memory import BaseChatMemory
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
