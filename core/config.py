@@ -1,6 +1,7 @@
 """ This module handles the configuration of storyteller application. """
 
 from enum import Enum
+from typing import List
 
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
@@ -24,6 +25,15 @@ class UI(str, Enum):
     CLI = "cli"
     WEB = "web"
 
+class LlamaCppModel(BaseModel):
+    """
+    Configuration class for LlamaCpp model
+    """
+
+    name: str
+    path: str
+    n_ctx: int
+    temperature: float
 
 class Config(BaseModel):
     """
@@ -33,8 +43,8 @@ class Config(BaseModel):
     llm_provider: LLMProvider
     openai_key: str
     openai_model: str
-    llamacpp_model_path: str
     ui: UI
+    models: List[LlamaCppModel]
 
 
 def load_config(path: str = "config.yml") -> Config:

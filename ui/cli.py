@@ -55,11 +55,10 @@ class CLI(BaseUI):
 
         # initialize the LLM
         if self.conf.llm_provider == config.LLMProvider.LLAMACPP:
-            llm = init_llamacpp(self.conf, self)
+            llm = init_llamacpp(self.conf.models[0], self)
         else:
             raise NotImplementedError(
-                f"LLM provider {self.conf.llm_provider} / " +
-                f"model {self.conf.llamacpp_model_path} not implemented."
+                f"LLM provider {self.conf.llm_provider} not implemented."
             )
 
         storyteller = StoryTeller(

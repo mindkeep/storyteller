@@ -25,7 +25,7 @@ Conversation history:
 Human: {response}
 AI: """
 
-def init_llamacpp(conf: config.Config, interface: BaseUI) -> LlamaCpp:
+def init_llamacpp(model: config.LlamaCppModel, interface: BaseUI) -> LlamaCpp:
     """ Initialize the LLM
 
     Args:
@@ -35,19 +35,14 @@ def init_llamacpp(conf: config.Config, interface: BaseUI) -> LlamaCpp:
         LlamaCpp: the LLM
     """
     # initialize the LLM
-    if conf.llm_provider == config.LLMProvider.LLAMACPP:
-        llm = LlamaCpp(
-            model_path=conf.llamacpp_model_path,
-            callback_manager=interface.get_callback_manager(),
-            verbose=True,
-            n_ctx=2048,
-            temperature=0.8,
-            stop=["\n\n", "You:", "you:", "Player:", "player:", "Human:", "human:"],
-        )  # type: ignore
-    else:
-        raise NotImplementedError(
-            f"LLM provider {conf.llm_provider} / model {conf.llamacpp_model_path} not implemented."
-        )
+    llm = LlamaCpp(
+        model_path=model.path,
+        callback_manager=interface.get_callback_manager(),
+        verbose=True,
+        n_ctx=model.n_ctx,
+        temperature=model.temperature,
+        stop=["\n\n", "You:", "you:", "Player:", "player:", "Human:", "human:"],
+    )  # type: ignore
     return llm
 
 def init_chain(
