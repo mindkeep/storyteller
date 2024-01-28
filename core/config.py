@@ -7,7 +7,6 @@ from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
 import yaml
 
-
 class LLMProvider(str, Enum):
     """
     Enum class for LLM provider
@@ -23,6 +22,7 @@ class UI(str, Enum):
     """
 
     CLI = "cli"
+    GUI = "gui"
     WEB = "web"
 
 class LlamaCppModel(BaseModel):

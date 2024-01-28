@@ -6,25 +6,16 @@ from langchain.callbacks.manager import CallbackManager
 from langchain.callbacks.streaming_stdout import StreamingStdOutCallbackHandler
 from langchain.memory import ConversationBufferMemory
 from langchain.schema.messages import ChatMessage
-from pydantic import PrivateAttr  # pylint: disable=no-name-in-module
 
 from ui.baseui import BaseUI
 from core import config
-from core.storyteller import StoryTeller
+from core.storyteller import StoryTeller, DEFAULT_SETTING
 from core.llamacpp_utils import init_llamacpp, init_chain
-
-
-DEFAULT_SETTING = """Our adventure begins in a lonely tavern. The barkeep
-leans in and says, "I mean no offense, but you look like you could use some
-work. I have a job for you if you're interested." """
-
 
 class CLI(BaseUI):
     """
     CLI interface class
     """
-
-    _callback_manager: CallbackManager = PrivateAttr()
 
     def __init__(self, conf: config.Config) -> None:
         """
@@ -74,11 +65,11 @@ class CLI(BaseUI):
         """
         print(text)
 
-    def get_input(self) -> str:
+    async def get_input(self) -> str:
         """
         Get input from the interface
         """
-        return input("\n\nYou: ")
+        return await input("\n\nYou: ")
 
     def get_callback_manager(self) -> CallbackManager:
         """

@@ -1,3 +1,4 @@
+customtkinter
 langchain
 llama-cpp-python
 pydantic < 2.0

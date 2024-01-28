@@ -3,15 +3,18 @@ This module contains the base interface class
 """
 
 from abc import ABC, abstractmethod
-from pydantic import BaseModel  # pylint: disable=no-name-in-module
 from core import config
 
-class BaseUI(BaseModel, ABC):
+class BaseUI(ABC):
     """
     Interface class
     """
 
-    conf: config.Config
+    def __init__(self, conf: config.Config) -> None:
+        """
+        Initialize the interface
+        """
+        self.conf = conf
 
     @abstractmethod
     def run(self) -> None:
@@ -26,7 +29,7 @@ class BaseUI(BaseModel, ABC):
         """
 
     @abstractmethod
-    def get_input(self) -> str:
+    async def get_input(self) -> str:
         """
         Get input from the interface
         """

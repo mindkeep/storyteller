@@ -3,8 +3,6 @@
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import LLMChain
 
-# using pydantic v1 until langchain updates to v2
-from pydantic import BaseModel  # pylint: disable=no-name-in-module
 from ui.baseui import BaseUI
 
 
@@ -27,14 +25,22 @@ Conversation history:
 Human: {response}
 AI: """
 
-class StoryTeller(BaseModel):
+class StoryTeller():
     """
     Storyteller class
     """
 
-    ui: BaseUI
-    llm_chain: LLMChain
-    memory: ConversationBufferMemory
+    def __init__(
+            self,
+            ui: BaseUI,
+            llm_chain: LLMChain,
+            memory: ConversationBufferMemory) -> None:
+        """
+        Initialize the storyteller application
+        """
+        self.ui = ui
+        self.llm_chain = llm_chain
+        self.memory = memory
 
     def run(self) -> None:
         """
