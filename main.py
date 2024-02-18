@@ -2,7 +2,7 @@
 
 from core import config
 from ui.cli import CLI
-from ui.gui import GUI
+import ui.gui 
 
 if __name__ == "__main__":
     conf = config.load_config(path="config.yml")
@@ -10,7 +10,8 @@ if __name__ == "__main__":
     if conf.ui == config.UI.CLI:
         interface = CLI(conf)
     elif conf.ui == config.UI.GUI:
-        interface = GUI(conf)
+        #temp hack
+        interface = ui.gui
     else:
         raise NotImplementedError("Interface not implemented")
 

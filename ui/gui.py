@@ -1,72 +1,163 @@
-import customtkinter as ctk
-import tkinter as tk
+"""
+Main flet entry point to have a dialogue with the user and an LLM
+"""
 
-from langchain.memory import ConversationBufferMemory
-from langchain.schema.messages import ChatMessage
+import flet as ft
 
-from ui.baseui import BaseUI
-from core import config
-from core.llamacpp_utils import init_llamacpp, init_chain
 
-from core.storyteller import StoryTeller, DEFAULT_SETTING
-
-from asyncio import Event,create_task
-
-class GUI(BaseUI):
+class MessageEntry(ft.UserControl):
     """
-    GUI interface class
+    Message entry control
     """
 
-    root: ctk.CTk
-    chat_area: tk.Listbox
-    user_input: tk.Entry
-    delete_button: tk.Button
-    edit_button: tk.Button
+    def __init__(self, author: str, message: str, parent: ft.Column) -> None:
+        """
+        Initialize the message entry control
+        """
+        super().__init__()
+        self.author = author
+        self.saved_content = message
+        # leave a reference to the parent control to be able to remove
+        self.me_parent = parent
 
-    def __init__(self, conf: config.Config):
-        super().__init__(conf=conf)
-        self.root = ctk.CTk()
-        self.chat_area = tk.Listbox(self.root)
-        self.chat_area.pack()
-        self.user_input = tk.Entry(self.root)
-        self.user_input.pack()
-        self.send_button = tk.Button(self.root, text="Send", command=self.send_input)
-        self.send_button.pack(side=tk.RIGHT)
+    def build(self) -> ft.Control:
+        """
+        Build the message entry control
+        """
 
-        self.send_event = Event()
-
-    def send_input(self):
-        self.send_event.set()
-
-    async def get_input(self) -> str:
-        await self.send_event.wait()
-        input = self.user_input.get()
-        self.chat_area.insert(tk.END, "\n\nYou: " + input)
-        self.user_input.delete(0, tk.END)
-        return input
-
-    def output(self, text: str) -> None:
-        self.chat_area.insert(tk.END, text)
-
-    def get_callback_manager(self) -> None:
-        return None
-
-    def run(self) -> None:
-        memory = ConversationBufferMemory(memory_key="memory")
-        memory.chat_memory.add_message(ChatMessage(role="Setting", content=DEFAULT_SETTING))
-
-        # initialize the LLM
-        if self.conf.llm_provider == config.LLMProvider.LLAMACPP:
-            llm = init_llamacpp(self.conf.models[0], self)
-        else:
-            raise NotImplementedError(
-                f"LLM provider {self.conf.llm_provider} not implemented."
-            )
-
-        storyteller = StoryTeller(
-            ui=self,
-            llm_chain=init_chain(llm=llm, interface=self, memory=memory),
-            memory=memory,
+        self.text_box = ft.TextField(
+            label=self.author,
+            value=self.saved_content,
+            multiline=True,
+            disabled=True,
+            expand=True,
         )
-#        create_task(storyteller.run())
-        self.root.mainloop()
+
+        def on_edit(e: ft.ControlEvent) -> None:
+            self.edit_button.visible = False
+            self.save_button.visible = True
+            self.cancel_button.visible = True
+            self.delete_button.visible = False
+            self.text_box.disabled = False
+            self.update()
+
+        self.edit_button = ft.ElevatedButton(text="Edit", on_click=on_edit)
+
+        def on_save(e: ft.ControlEvent) -> None:
+            self.saved_content = self.text_box.value
+            self.edit_button.visible = True
+            self.save_button.visible = False
+            self.cancel_button.visible = False
+            self.delete_button.visible = True
+            self.text_box.disabled = True
+            self.update()
+
+        self.save_button = ft.ElevatedButton(
+            text="Save", on_click=on_save, visible=False
+        )
+
+        def on_cancel(e: ft.ControlEvent) -> None:
+            self.text_box.value = self.saved_content
+            self.edit_button.visible = True
+            self.save_button.visible = False
+            self.cancel_button.visible = False
+            self.delete_button.visible = True
+            self.text_box.disabled = True
+            self.update()
+
+        self.cancel_button = ft.ElevatedButton(
+            text="Cancel", on_click=on_cancel, visible=False
+        )
+
+        def on_delete(e: ft.ControlEvent) -> None:
+            self.me_parent.controls.remove(self)
+            self.me_parent.update()
+
+        self.delete_button = ft.ElevatedButton(text="Delete", on_click=on_delete)
+
+        return ft.Row(
+            controls=[
+                self.text_box,
+                self.edit_button,
+                self.save_button,
+                self.cancel_button,
+                self.delete_button,
+            ]
+        )
+
+
+class STMainPage(ft.UserControl):
+    """
+    Main page for the StoryTeller application
+    """
+
+    def __init__(self) -> None:
+        """
+        Initialize the main page
+        """
+        super().__init__()
+        # self.conf = conf
+
+    def build(self) -> ft.Control:
+        """
+        Build the main page
+        """
+        msg_hist = ft.Column()
+        msg_hist.controls.append(
+            MessageEntry(
+                author="Setting",
+                message="Welcome to the StoryTeller GUI!",
+                parent=msg_hist,
+            )
+        )
+        msg_hist.controls.append(
+            MessageEntry(
+                author="AI",
+                message="Type 'exit' to exit the application.",
+                parent=msg_hist,
+            )
+        )
+        input_box = ft.TextField(label="You", expand=True, multiline=True)
+
+        def on_send(e: ft.ControlEvent) -> None:
+
+            msg_hist.controls.append(
+                MessageEntry(
+                    author="You",
+                    message=str(input_box.value),
+                    parent=msg_hist,
+                )
+            )
+            input_box.value = ""
+            self.update()
+            input_box.focus()
+
+        send_button = ft.ElevatedButton(text="Send", on_click=on_send)
+        return ft.Column(
+            controls=[
+                msg_hist,
+                ft.Row(
+                    controls=[input_box, send_button],
+                    alignment=ft.alignment.bottom_center,
+                ),
+            ]
+        )
+
+
+def main(page: ft.Page) -> None:
+    """
+    Main entry point for the StoryTeller GUI
+    """
+    # conf = config.load_config(path="config.yml")
+    page.title = "StoryTeller"
+    page.theme = ft.Theme(color_scheme_seed="green")
+    page.theme_mode = ft.ThemeMode.DARK
+    page.scroll = ft.ScrollMode.ALWAYS
+    page.add(STMainPage())
+
+def run() -> None:
+    ft.app(main)
+
+
+if __name__ == "__main__":
+    run()

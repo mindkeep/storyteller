@@ -1,4 +1,4 @@
-customtkinter
+flet
 langchain
 llama-cpp-python
 pydantic < 2.0

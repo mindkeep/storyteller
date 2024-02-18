@@ -3,12 +3,11 @@
 from langchain.llms.base import LLM
 from langchain.llms.llamacpp import LlamaCpp
 from langchain.memory.chat_memory import BaseChatMemory
+from langchain.callbacks.manager import CallbackManager
 from langchain.chains import LLMChain
 from langchain.prompts import PromptTemplate
 
 from core import config
-from ui.baseui import BaseUI
-
 
 PROMPT_TEMPLATE = """You are a dungeon master and responding
 to the player's stated actions.
@@ -25,8 +24,9 @@ Conversation history:
 Human: {response}
 AI: """
 
-def init_llamacpp(model: config.LlamaCppModel, interface: BaseUI) -> LlamaCpp:
-    """ Initialize the LLM
+
+def init_llamacpp(model: config.LlamaCppModel, cb_manager: CallbackManager) -> LlamaCpp:
+    """Initialize the LLM
 
     Args:
         conf (config.Config): the configuration
@@ -37,7 +37,7 @@ def init_llamacpp(model: config.LlamaCppModel, interface: BaseUI) -> LlamaCpp:
     # initialize the LLM
     llm = LlamaCpp(
         model_path=model.path,
-        callback_manager=interface.get_callback_manager(),
+        callback_manager=cb_manager,
         verbose=True,
         n_ctx=model.n_ctx,
         temperature=model.temperature,
@@ -45,11 +45,11 @@ def init_llamacpp(model: config.LlamaCppModel, interface: BaseUI) -> LlamaCpp:
     )  # type: ignore
     return llm
 
+
 def init_chain(
-        llm: LLM,
-        interface: BaseUI,
-        memory: BaseChatMemory) -> LLMChain:
-    """ Initialize the LLM chain
+    llm: LLM, memory: BaseChatMemory, cb_manager: CallbackManager
+) -> LLMChain:
+    """Initialize the LLM chain
 
     Args:
         conf (config.Config): the configuration
@@ -61,9 +61,8 @@ def init_chain(
 
     # create our prompt template
     prompt_template = PromptTemplate(
-        input_variables=["memory", "response"],
-        template=PROMPT_TEMPLATE)
-
+        input_variables=["memory", "response"], template=PROMPT_TEMPLATE
+    )
 
     # initialize the conversation chain
     conversation_chain = LLMChain(
@@ -71,7 +70,7 @@ def init_chain(
         prompt=prompt_template,
         memory=memory,
         verbose=True,
-        callback_manager=interface.get_callback_manager(),
-        )
+        callback_manager=cb_manager,
+    )
 
     return conversation_chain

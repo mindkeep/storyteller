@@ -3,9 +3,6 @@
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import LLMChain
 
-from ui.baseui import BaseUI
-
-
 DEFAULT_SETTING = """Our adventure begins in a lonely tavern. The barkeep
 leans in and says, "I mean no offense, but you look like you could use some
 work. I have a job for you if you're interested." """
@@ -32,29 +29,10 @@ class StoryTeller():
 
     def __init__(
             self,
-            ui: BaseUI,
             llm_chain: LLMChain,
             memory: ConversationBufferMemory) -> None:
         """
         Initialize the storyteller application
         """
-        self.ui = ui
         self.llm_chain = llm_chain
         self.memory = memory
-
-    def run(self) -> None:
-        """
-        Run the storyteller application
-        """
-        self.ui.output("Type 'exit' to exit the application.\n")
-
-        while True:
-            user_input = self.ui.get_input()
-            if user_input in ["exit", "quit"]:
-                break
-            else:
-                try:
-                    self.llm_chain.run(user_input)
-                except Exception as err:  # pylint: disable=broad-except
-                    self.ui.output(f"Error: {err}")
-                    continue
