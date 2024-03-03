@@ -2,6 +2,8 @@
 Main flet entry point to have a dialogue with the user and an LLM
 """
 
+import core.config
+
 import flet as ft
 
 
@@ -33,7 +35,7 @@ class MessageEntry(ft.UserControl):
             expand=True,
         )
 
-        def on_edit(e: ft.ControlEvent) -> None:
+        def on_edit(_: ft.ControlEvent) -> None:
             self.edit_button.visible = False
             self.save_button.visible = True
             self.cancel_button.visible = True
@@ -43,7 +45,7 @@ class MessageEntry(ft.UserControl):
 
         self.edit_button = ft.ElevatedButton(text="Edit", on_click=on_edit)
 
-        def on_save(e: ft.ControlEvent) -> None:
+        def on_save(_: ft.ControlEvent) -> None:
             self.saved_content = self.text_box.value
             self.edit_button.visible = True
             self.save_button.visible = False
@@ -56,7 +58,7 @@ class MessageEntry(ft.UserControl):
             text="Save", on_click=on_save, visible=False
         )
 
-        def on_cancel(e: ft.ControlEvent) -> None:
+        def on_cancel(_: ft.ControlEvent) -> None:
             self.text_box.value = self.saved_content
             self.edit_button.visible = True
             self.save_button.visible = False
@@ -69,7 +71,7 @@ class MessageEntry(ft.UserControl):
             text="Cancel", on_click=on_cancel, visible=False
         )
 
-        def on_delete(e: ft.ControlEvent) -> None:
+        def on_delete(_: ft.ControlEvent) -> None:
             self.me_parent.controls.remove(self)
             self.me_parent.update()
 
@@ -91,12 +93,12 @@ class STMainPage(ft.UserControl):
     Main page for the StoryTeller application
     """
 
-    def __init__(self) -> None:
+    def __init__(self, conf: core.config.Config) -> None:
         """
         Initialize the main page
         """
         super().__init__()
-        # self.conf = conf
+        self.conf = conf
 
     def build(self) -> ft.Control:
         """
@@ -119,7 +121,7 @@ class STMainPage(ft.UserControl):
         )
         input_box = ft.TextField(label="You", expand=True, multiline=True)
 
-        def on_send(e: ft.ControlEvent) -> None:
+        def on_send(_: ft.ControlEvent) -> None:
 
             msg_hist.controls.append(
                 MessageEntry(
@@ -131,32 +133,40 @@ class STMainPage(ft.UserControl):
             input_box.value = ""
             self.update()
             input_box.focus()
-
         send_button = ft.ElevatedButton(text="Send", on_click=on_send)
-        return ft.Column(
-            controls=[
-                msg_hist,
-                ft.Row(
-                    controls=[input_box, send_button],
-                    alignment=ft.alignment.bottom_center,
-                ),
-            ]
+        
+        col = ft.Column()
+        col.controls.append(msg_hist)
+        col.controls.append(
+            ft.Row(
+                controls=[input_box, send_button],
+                alignment=ft.MainAxisAlignment.CENTER
+            )
         )
+
+        return col
 
 
 def main(page: ft.Page) -> None:
     """
     Main entry point for the StoryTeller GUI
     """
-    # conf = config.load_config(path="config.yml")
+    conf = config.load_config(path="config.yml")
     page.title = "StoryTeller"
     page.theme = ft.Theme(color_scheme_seed="green")
     page.theme_mode = ft.ThemeMode.DARK
     page.scroll = ft.ScrollMode.ALWAYS
-    page.add(STMainPage())
+    page.add(STMainPage(conf))
 
-def run() -> None:
-    ft.app(main)
+def run(web: bool = False) -> None:
+    """
+    Run the StoryTeller application
+    """
+
+    if web:
+        ft.app(target=main, view=ft.AppView.WEB_BROWSER)
+    else:
+        ft.app(target=main)
 
 
 if __name__ == "__main__":
