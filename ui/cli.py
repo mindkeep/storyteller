@@ -8,7 +8,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain.schema.messages import ChatMessage
 
 from core import config
-from core.storyteller import StoryTeller, DEFAULT_SETTING
+from core.storyteller import StoryTeller, PROMPT_TEMPLATE
 from core.llamacpp_utils import init_llamacpp, init_chain
 
 
@@ -29,22 +29,10 @@ class CLI:
         Run the CLI interface
         """
 
+        welcome_str = "Welcome to the StoryTeller CLI!"
         # print the welcome message
-        print("Welcome to the StoryTeller CLI!")
-
-        # prompt the user for a session name
-        session_name = input("Enter a session name: ")
-        print(f"Session name: {session_name}")
-
-        # if the session is not found, ask if a new session should be created
-        # TODO: implement this
-
-        # create the storyteller memory
-        # TODO: implement new and load memory functions
-        memory = ConversationBufferMemory(memory_key="memory")
-        memory.chat_memory.add_message(
-            ChatMessage(role="Setting", content=DEFAULT_SETTING)
-        )
+        print(welcome_str)
+        print('=' * len(welcome_str))
 
         # initialize the LLM
         if self.conf.llm_provider == config.LLMProvider.LLAMACPP:
@@ -55,21 +43,26 @@ class CLI:
             )
 
         storyteller = StoryTeller(
-            llm_chain=init_chain(
-                llm=llm, memory=memory, cb_manager=self._callback_manager
-            ),
-            memory=memory,
+            llm=llm,
+            persona="",
+            setting="",
+            location="",
         )
 
         print("Type 'exit' to exit the application.\n")
 
+        msg_history = []
         while True:
             user_input = input("\n\nYou: ")
             if user_input in ["exit", "quit"]:
                 break
             else:
                 try:
-                    storyteller.llm_chain.run(user_input)
+                    llm_out = storyteller.generate_response(
+                        msg_history=msg_history,
+                        user_input=user_input)
+                    msg_history.append({'role': 'user', 'content': user_input})
+                    msg_history.append({'role': 'assistant', 'content': llm_out})
                 except Exception as err:  # pylint: disable=broad-except
                     print(f"Error: {err}")
                     continue
