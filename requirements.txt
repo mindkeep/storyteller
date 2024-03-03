@@ -1,4 +1,4 @@
-flet
+flet < 0.20
 langchain
 llama-cpp-python
 pydantic < 2.0
