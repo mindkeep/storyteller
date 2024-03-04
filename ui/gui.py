@@ -41,6 +41,7 @@ class MessageEntry(ft.UserControl):
             self.cancel_button.visible = True
             self.delete_button.visible = False
             self.text_box.disabled = False
+            self.text_box.focus()
             self.update()
 
         self.edit_button = ft.ElevatedButton(text="Edit", on_click=on_edit)
