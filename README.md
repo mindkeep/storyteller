@@ -7,26 +7,23 @@ project very modular such that it can be played from the console or over
 some more robust chat interface (such as Discord), and connect to different
 LLMs (such as OpenAI's Chat-GPT or Llama-2.) The setting and initial prompts
 will be set by the user/admin. Everything from there should be a fairly unique
-experience.
+experience that can be saved and continued later. Scenarios can be left very
+open ended and allow the AI to fill in the gaps, or they can be very specific
+with large user entered context and rules.
 
 ## plans
 
 * multi-game support and saving
 * interfaces
-  * maybe a better managed cli
+  * cli
+  * flet - making a flet (flutter) interface
   * discord
-  * streamlit or streamsync
 * LLMS
-  * add OpenAI back as an LLM
-  * make LLamaCpp a singleton instance (or microservice)
+  * switching to aim primarily at OpenAI's API since there are a lot of compatibility
+    options available
+* MemGPT
+  * Ultimately I'd like to track some specific things manually. However,
+    MemGPT is a great starting point and may even become the long term solution
+    with some additional function calls.
 * multiplayer support and joining games (easiest as a discord bot probably)
-* Langchain and different game modes
-  * Free form chat mode (basically what we have now)
-  * Item tracking
-  * Skills checking and challenges
-    * via LangChain tools
-  * More prompt templates,
-* output complexity stats around tokens and response times
-* add a set of commands for Out Of Character operations
-  * undo commands
-  * history edits and tweaks?
+* allow history and memory to be edited
