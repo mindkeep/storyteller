@@ -1,5 +1,5 @@
 flet < 0.20
-langchain
-llama-cpp-python
-pydantic < 2.0
+openai
+pydantic
+python-dotenv
 PyYAML

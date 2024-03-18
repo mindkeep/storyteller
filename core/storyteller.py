@@ -1,9 +1,8 @@
+import os
+from typing import List, Dict
+from openai import OpenAI
+
 """main module for the storyteller application"""
-
-from langchain_core.prompts import PromptTemplate
-from langchain.memory import ConversationBufferMemory
-from langchain.llms.base import LLM
-
 
 PROMPT_TEMPLATE = """{persona}
 
@@ -17,12 +16,7 @@ conversation. Behind you, you hear the barkeep laugh.
 Settings: {setting}
 
 Current location: {location}
-
-Conversation history:
-{memory}
-
-Human: {user_input}
-AI: """
+"""
 
 
 class StoryTeller:
@@ -30,34 +24,38 @@ class StoryTeller:
     Storyteller class
     """
 
-    def __init__(
-        self, llm: LLM, persona: str, setting: str, location: str
-    ) -> None:
+    def __init__(self, persona: str, setting: str, location: str) -> None:
         """
         Initialize the storyteller application
         """
-        self.llm = llm
+        self.client = OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            base_url=os.getenv("OPENAI_API_BASE"),
+        )
         self.persona = persona
         self.setting = setting
         self.location = location
 
     def generate_response(
-        self,
-        msg_history: ConversationBufferMemory,
-        user_input: str
+        self, msg_history: List[Dict[str, str]], user_input: str
     ) -> str:
         """
         Generate a response to the given input
         """
-        prompt = PromptTemplate.from_template(template=PROMPT_TEMPLATE)
-        
-        chain = prompt | self.llm
- 
-        return chain.invoke(
-            input={
-                'user_input': user_input,
-                'persona': self.persona,
-                'setting': self.setting,
-                'location': self.location,
-                'memory': msg_history
-                })
+        system_prompt = PROMPT_TEMPLATE.format(
+            persona=self.persona, setting=self.setting, location=self.location
+        )
+
+        # prepend the system prompt to the message history and
+        # append the user input
+        messages = (
+            [{"role": "system", "content": system_prompt}]
+            + msg_history
+            + [{"role": "user", "content": user_input}]
+        )
+
+        response = self.client.chat.completions.create(
+            model=os.getenv("OPENAI_API_MODEL"), messages=messages
+        )
+
+        return response.choices[0].message.content

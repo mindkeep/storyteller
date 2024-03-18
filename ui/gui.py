@@ -2,8 +2,6 @@
 Main flet entry point to have a dialogue with the user and an LLM
 """
 
-import core.config
-
 import flet as ft
 
 
@@ -94,13 +92,6 @@ class STMainPage(ft.UserControl):
     Main page for the StoryTeller application
     """
 
-    def __init__(self, conf: core.config.Config) -> None:
-        """
-        Initialize the main page
-        """
-        super().__init__()
-        self.conf = conf
-
     def build(self) -> ft.Control:
         """
         Build the main page
@@ -134,14 +125,14 @@ class STMainPage(ft.UserControl):
             input_box.value = ""
             self.update()
             input_box.focus()
+
         send_button = ft.ElevatedButton(text="Send", on_click=on_send)
-        
+
         col = ft.Column()
         col.controls.append(msg_hist)
         col.controls.append(
             ft.Row(
-                controls=[input_box, send_button],
-                alignment=ft.MainAxisAlignment.CENTER
+                controls=[input_box, send_button], alignment=ft.MainAxisAlignment.CENTER
             )
         )
 
@@ -152,12 +143,12 @@ def main(page: ft.Page) -> None:
     """
     Main entry point for the StoryTeller GUI
     """
-    conf = config.load_config(path="config.yml")
     page.title = "StoryTeller"
     page.theme = ft.Theme(color_scheme_seed="green")
     page.theme_mode = ft.ThemeMode.DARK
     page.scroll = ft.ScrollMode.ALWAYS
-    page.add(STMainPage(conf))
+    page.add(STMainPage())
+
 
 def run(web: bool = False) -> None:
     """
