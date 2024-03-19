@@ -4,7 +4,7 @@ This module provides the CLI interface
 
 from core.persona import load_persona
 from core.scenario import load_scenario
-from core.storyteller import StoryTeller, PROMPT_TEMPLATE
+from core.storyteller import StoryTeller
 
 
 class CLI:
