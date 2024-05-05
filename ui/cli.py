@@ -39,13 +39,13 @@ class CLI:
             if user_input in ["exit", "quit"]:
                 break
             else:
-                try:
-                    llm_out = storyteller.generate_response(
-                        msg_history=msg_history, user_input=user_input
-                    )
-                    print(f"AI: {llm_out}")
-                    msg_history.append({"role": "user", "content": user_input})
-                    msg_history.append({"role": "assistant", "content": llm_out})
-                except Exception as err:  # pylint: disable=broad-except
-                    print(f"Error: {err}")
-                    continue
+                llm_out = storyteller.get_stream_response(
+                    msg_history=msg_history, user_input=user_input
+                )
+                print("AI: ", end="")
+                response = ""
+                for chunk in llm_out:
+                    print(chunk, end="")
+                    response += chunk
+                msg_history.append({"role": "user", "content": user_input})
+                msg_history.append({"role": "assistant", "content": response})

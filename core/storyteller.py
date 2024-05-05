@@ -1,5 +1,5 @@
 import os
-from typing import List, Dict
+from typing import List, Dict, Iterable
 from openai import OpenAI
 
 """main module for the storyteller application"""
@@ -30,13 +30,13 @@ class StoryTeller:
         """
         self.client = OpenAI(
             api_key=os.getenv("OPENAI_API_KEY"),
-            base_url=os.getenv("OPENAI_API_BASE"),
+            base_url=os.getenv("OPENAI_BASE_URL"),
         )
         self.persona = persona
         self.setting = setting
         self.location = location
 
-    def generate_response(
+    def get_response(
         self, msg_history: List[Dict[str, str]], user_input: str
     ) -> str:
         """
@@ -59,3 +59,34 @@ class StoryTeller:
         )
 
         return response.choices[0].message.content
+
+    def get_stream_response(
+        self, msg_history: List[Dict[str, str]], user_input: str
+    ) -> Iterable[str]:
+        """
+        Generate a response to the given input
+        """
+        system_prompt = PROMPT_TEMPLATE.format(
+            persona=self.persona, setting=self.setting, location=self.location
+        )
+
+        # prepend the system prompt to the message history and
+        # append the user input
+        messages = (
+            [{"role": "system", "content": system_prompt}]
+            + msg_history
+            + [{"role": "user", "content": user_input}]
+        )
+
+        response = self.client.chat.completions.create(
+            model=os.getenv("OPENAI_API_MODEL"),
+            messages=messages,
+            stream=True,
+        )
+
+        for chunk in response:
+            #print(chunk)
+            content = chunk.choices[0].delta.content
+            if content is None:
+                continue
+            yield content
