@@ -6,6 +6,7 @@ from core.persona import load_persona
 from core.scenario import load_scenario
 from core.storyteller import StoryTeller
 
+from openai import APIConnectionError
 
 class CLI:
     """
@@ -37,6 +38,9 @@ class CLI:
         persona = load_persona()
         scenario = load_scenario()
 
+        print(f"Location: {scenario.location}")
+        print(f"Setting: {scenario.setting}")
+
         storyteller = StoryTeller(
             persona=persona,
             setting=scenario.setting,
@@ -47,18 +51,32 @@ class CLI:
 
         msg_history = []
         while True:
-            user_input = input("\n\nYou: ")
-            if user_input.startswith("/"):
-                self.handle_command(user_input)
+            try:
+                user_input = input("\nYou: ")
+            except KeyboardInterrupt:
+                # exit loop and close chat
                 break
-            else:
+
+            if user_input in ["/exit", "/quit"]:
+                # exit loop and close chat
+                break
+
+            try:
                 llm_out = storyteller.get_stream_response(
                     msg_history=msg_history, user_input=user_input
                 )
+
                 print("AI: ", end="")
                 response = ""
                 for chunk in llm_out:
                     print(chunk, end="")
                     response += chunk
-                msg_history.append({"role": "user", "content": user_input})
-                msg_history.append({"role": "assistant", "content": response})
+            except APIConnectionError as api_err:
+                print(f"API Connection Error: {api_err}")
+                print("Please check your internet connection and try again.")
+                exit(1)
+
+            msg_history.append({"role": "user", "content": user_input})
+            msg_history.append({"role": "assistant", "content": response})
+
+        print("\nExiting...")
