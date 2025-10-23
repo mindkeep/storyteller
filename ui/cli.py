@@ -6,7 +6,7 @@ from core.persona import load_persona
 from core.scenario import load_scenario
 from core.storyteller import StoryTeller
 
-from openai import APIConnectionError
+from openai import APIConnectionError, AuthenticationError
 
 class CLI:
     """
@@ -74,6 +74,10 @@ class CLI:
             except APIConnectionError as api_err:
                 print(f"API Connection Error: {api_err}")
                 print("Please check your internet connection and try again.")
+                exit(1)
+            except AuthenticationError as auth_err:
+                print(f"Authentication Error: {auth_err}")
+                print("Please check your API key and try again.")
                 exit(1)
 
             msg_history.append({"role": "user", "content": user_input})
