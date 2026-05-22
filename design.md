@@ -1,104 +1,72 @@
-# design ideas
+# Design
 
+StoryTeller is a single-player narrative RPG powered by an LLM dungeon master.
 
-One of the ideas in this is to have the Storyteller take into account the attitude of the player and work with (or against) them based on how well intentioned they are. Basically I want to make the Storyteller a bit of a jerk if the player is a jerk.
+## Core idea
 
-Creative prompt building will be the key in this project. How do we give the LLM the right context to continue an interaction while supplying the most relevant history?
+The player types free-form actions. The LLM narrates outcomes. There are no hard mechanics — the world is shaped entirely by the narrative.
 
-Does the character have the skills and equipment to pull off whatever the player is asking? Even if they don't, maybe it's a calculated risk to learn the skill if successful. There are tons of possibilities here, but of course, each question is potentially a new prompt and a new response, and costs resources/time.
+After every exchange the LLM maintains a compact "game notes" block: current location, active goals, key NPCs, plot threads. This block is always in the system prompt regardless of how much chat history has been trimmed, ensuring the DM never "forgets" important context.
 
-```mermaid
+## Unified CLI + GUI
+
+Both interfaces share the same SQLite database. A game started in the CLI can be resumed in the GUI and vice versa.
+
+### CLI slash commands
+
+```
+/new <name>      Create a game using default YAML presets
+/load <name>     Resume a game (partial name match)
+/list-games      List all saved games
+/help            Show commands
+/exit            Quit
+```
+
+Regular input (no leading `/`) is sent to the LLM as a player action.
+
+### GUI
+
+- Game select screen: list of saved games + New Game button
+- New Game dialog: persona/scenario dropdowns populated from YAML preset files, with editable text fields
+- Game screen: chat panel (left) + notes panel (right), input bar at bottom
+
+## YAML preset system
+
+Files in `data/personas/*.yml` and `data/scenarios/*.yml` are the preset library. Both interfaces discover presets automatically from these directories — no code changes needed to add new settings or personas.
+
+**To add a new scenario:** create `data/scenarios/my_world.yml` with `setting` and `location` keys. It will appear in the GUI dropdown and can be referenced by name.
+
+## Context management
+
+```
 flowchart TD
-    start[Start] --> input[Input]
-    input -->|What is the player trying to do?| redirect{LLM\nRedirect}
-    redirect -->|Ask for clarity| clarify[Clarify]
-    clarify -->|Clarify previous response| input
-    redirect -->|Take some game action| action[Game Action]
-    action -->|Does this make sense?| sanity{LLM\nSanity Check}
-    sanity -->|Yes| attempt[Attempt the action]
-    sanity -->|No| guidance[Give the player some guidance]
-    guidance -->|revert and ask for input| input
-    guidance -->|Do it anyway!| attempt
-    attempt -->|FAFO| response[Response]
-    response --> update[LLM\nUpdate the game state]
-    update --> input
-    
+    input[Player action] --> chat[LLM streams narrative]
+    chat --> save[Save messages to DB]
+    save --> notes[LLM updates game notes ≤200 words]
+    notes --> db2[Save notes to DB]
+    db2 --> next[Next exchange]
 ```
 
+- Last `HISTORY_LIMIT = 20` messages sent to LLM per call
+- Game notes (always ≤200 words) always included in system prompt
+- On resume: full history shown in UI, last 20 sent to LLM, notes restored
 
-# saved ideas
-This is older stuff that I'm not sure if I want to keep or not. I'm keeping it here for now.
+## UI layout (GUI)
 
-Currently I'm stepping away from this in favor of MemGPT.
-
-Diagram around the design of the project. This is a work in progress.
-
-class diagram
-```mermaid
-classDiagram
-    Description --* GameState
-    Summary --* GameState
-    HistEntry --* GameState
-
-    Storyteller --* GameState
-    Player --* Character
-    Character --* GameState
-    class Summary {
-        + datetime date
-        + GameTime game_date
-        + string summary
-        + float[] embedding
-    }
-    class Description {
-        + datetime date
-        + string description
-        + float[] embedding
-    }
-    class HistEntry {
-        + datetime date
-        + string input
-        + string response
-        + float[] embedding
-    }
-    class GameState {
-        + string name
-        + string description
-        + string location
-        + GameTime game_date
-        + Summary[] summaries
-        + Description[] descriptions
-        + HistEntry[] history
-    }
-    class GameTime {
-        + int year
-        + int month
-        + int day
-        + int hour
-        + int minute
-        + int second
-    }
-    class Storyteller {
-        string model
-        string description
-        string attitude
-        string 
-    }
-    class Player {
-        + string name
-        + string description
-        + int advantages
-        + string attitude
-    }
-    class Character {
-        + string name
-        + string description
-        + string location
-        + string[] inventory
-        + string[] skills
-        + string[] traits
-        + string[] relationships
-        + string[] goals
-        + string[] secrets
-        + string[] history
-    }
 ```
+┌─ AppBar (game name) ──────────────────────────────────┐
+│                                                        │
+│  Chat history (scrollable)    │  Game Notes panel      │
+│  ── MessageEntry widgets ──   │  ── updated by LLM ──  │
+│  ── edit/save/delete ─────    │                        │
+│                                                        │
+├─ Input field ────────────────────────── [Send] ────────┤
+```
+
+## Future directions
+
+- Character sheet panel (inventory, skills, stats)
+- Multiple personas/scenarios in the preset library
+- Manual note editing
+- Export session as narrative text
+- Discord bot interface
